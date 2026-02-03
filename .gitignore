@@ -1,0 +1,12 @@
+.venv/
+dist/
+**/__pycache__/
+.vscode/
+*.egg-info/
+.DS_Store
+.python-version
+
+# sonarqube
+.reports/
+.coverage
+.scannerwork/
