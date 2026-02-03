@@ -1,0 +1,80 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+  substitutionOption: ALLOW_LOOSE
+
+steps:
+  # Debug print branch
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Running for branch: ${BRANCH_NAME}"
+
+  # Step 1 — Build
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA",
+        "-f",
+        "Dockerfile",
+        "."
+      ]
+
+  # Step 2 — Push
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA"
+      ]
+
+  # Step 3 — Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      [
+        "run",
+        "deploy",
+        "$_SERVICE_NAME",
+        "--image=$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA",
+        "--region=$_DEPLOY_REGION",
+        "--platform=managed",
+        "--quiet",
+        "--cpu=4",
+        "--memory=2Gi",
+        "--min-instances=1",
+        "--max-instances=5",
+        "--concurrency=20",
+        "--cpu-boost",
+        "--vpc-connector=$_VPC_CONNECTOR",
+        "--vpc-egress=all-traffic",
+        "--labels=commit-sha=$SHORT_SHA",
+        "--no-cpu-throttling"
+      ]
+
+  # Step 4 — Keep only latest 7 revisions
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: bash
+    args:
+      - "-c"
+      - |
+        gcloud run revisions list \
+          --service=$_SERVICE_NAME \
+          --region=$_DEPLOY_REGION \
+          --platform=managed \
+          --sort-by=~metadata.creationTimestamp \
+          --format="value(METADATA.name)" \
+          | tail -n +8 \
+          | xargs -r -I {} gcloud run revisions delete {} --region=$_DEPLOY_REGION --quiet || true
+
+substitutions:
+  _BRANCH: ""
+  # You should probably define defaults for these if they aren't always passed by the trigger
+  _SERVICE_NAME: ""
+  _DEPLOY_REGION: "us-central1"
+  _VPC_CONNECTOR: ""
+
+timeout: 3600s
