@@ -1,0 +1,13 @@
+[app]
+type = "peekguard"
+
+[statsd]
+host = "localhost"
+port = 8125
+
+[sensu]
+host = "localhost"
+port = 3030
+
+[gcp]
+key = prod/ec2/n-virginia/peekguard/gcp_key
