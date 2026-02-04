@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+import os
 import uvicorn
 from fastapi import FastAPI
 from presidio_analyzer import AnalyzerEngine
@@ -95,17 +96,19 @@ async def read_root():
 
 
 if __name__ == "__main__":
-    port = 8045
+    default_port = 8045
     should_reload = False
     match current_environment():
         case Environment.PRODUCTION:
-            port = 8044
+            default_port = 8044
 
         case Environment.LOCALHOST:
             should_reload = True
 
         case _:
             pass
+
+    port = int(os.environ.get("PORT", default_port))        
 
     logger.info("Starting peekguard api on port %d with reload=%s", port, should_reload)
     uvicorn.run(
