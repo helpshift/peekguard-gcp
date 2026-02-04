@@ -1,39 +1,47 @@
-FROM python:3.12.9-slim
+FROM python:3.12.9-slim AS builder
 
-# 1. Setup Environment
 WORKDIR /app
-# PYTHONUNBUFFERED ensures logs stream to Cloud Logging immediately
-ENV PYTHONUNBUFFERED=1 \
-    HSFT_CONF_ENV=sandbox
+ENV PYTHONUNBUFFERED=1
 
-# 2. Install System Dependencies
-# 'build-essential' is REQUIRED for posix_ipc compilation
-# 'libgomp1' is REQUIRED for Spacy/Torch
+# Install system deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Upgrade pip
-RUN pip install --no-cache-dir --upgrade pip --root-user-action=ignore
+# 1. CREATE THE DIRECTORY
+RUN mkdir -p /root/.pip
 
-# 4. Pre-install CPU-only Torch (Optimization)
-# Prevents downloading the massive GPU version if presidio pulls it in
-RUN pip install --no-cache-dir \
-    torch==2.5.1+cpu torchvision torchaudio \
-    --index-url https://download.pytorch.org/whl/cpu \
-    --root-user-action=ignore
+# 2. COPY THE SECRET FILE
+# This file comes from the Cloud Build step above
+COPY pip.conf /root/.pip/pip.conf
 
-# 5. Install Project Dependencies
+# 3. Install Dependencies
+# pip will automatically read /root/.pip/pip.conf and find 'hspymonitoring'
 COPY pyproject.toml .
-# This installs everything, including the Spacy model from the URL in toml
 RUN pip install --no-cache-dir . --root-user-action=ignore
 
-# 6. Copy Application Code
+# ==========================================
+# STAGE 2: Runtime
+# ==========================================
+FROM python:3.12.9-slim
+
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1 \
+    HSFT_CONF_ENV=sandbox
+
+# Install minimal runtime libs
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# 4. COPY INSTALLED LIBRARIES ONLY
+# We copy the libraries from the builder, but NOT the /root/.pip/pip.conf file!
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy App Code
 COPY . .
 
-# 7. Runtime
 EXPOSE 8080
-
-# Run the module
 CMD ["python", "-m", "peekguard.main"]
