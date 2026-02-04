@@ -9,7 +9,7 @@ steps:
     args:
       - '-c'
       - |
-        gcloud secrets versions access latest --secret="pip-conf-private" > pip.conf
+        gcloud secrets versions access latest --secret="pip-conf-private-pii" > pip.conf
         echo "Running for branch: ${BRANCH_NAME}"
 
   # Step 1 — Build
