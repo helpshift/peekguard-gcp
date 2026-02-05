@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from google.cloud import dlp_v2
 from google.oauth2 import service_account
+from google.auth import default as google_auth_default
 from presidio_analyzer import AnalysisExplanation, EntityRecognizer, RecognizerResult
 from presidio_analyzer.nlp_engine import NlpArtifacts
 
@@ -52,6 +53,8 @@ class GoogleDlpRecognizer(EntityRecognizer):
                 )
                 self.dlp_client = dlp_v2.DlpServiceClient()
         else:
+            credentials, project_id = google_auth_default()
+            self.project_id = project_id
             self.dlp_client = dlp_v2.DlpServiceClient()
         self.parent = f"projects/{self.project_id}"
 
