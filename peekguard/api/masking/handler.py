@@ -146,6 +146,10 @@ class PresidioMasker:
             entities=entities,
             score_threshold=MIN_THRESHOLD,
         )
+        logger.info(
+            "ALL ANALYZER RESULTS: %s",
+            [(r.entity_type, r.start, r.end, r.score) for r in results]
+        )
 
         # Sort for greedy longest‑first selection per original impl.
         results.sort(key=lambda r: (r.start, -(r.end - r.start), -r.score))

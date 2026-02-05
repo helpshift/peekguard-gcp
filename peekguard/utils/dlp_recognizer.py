@@ -61,6 +61,7 @@ class GoogleDlpRecognizer(EntityRecognizer):
         """
         Analyze text using Google Cloud DLP.
         """
+        entities = entities or self.supported_entities
         results = []
         if not text:
             return results
@@ -74,6 +75,9 @@ class GoogleDlpRecognizer(EntityRecognizer):
         if not dlp_info_types:
             logger.debug("No matching DLP infoTypes for requested entities.")
             return results
+
+        logger.info(f"Incoming entities from presidio: {entities}")
+        logger.info(f"DLP infoTypes requested: {dlp_info_types}")
 
         try:
             item = {"value": text}
@@ -131,6 +135,9 @@ class GoogleDlpRecognizer(EntityRecognizer):
             logger.error(f"Error calling GCP DLP: {e}", exc_info=True)
             # Depending on policy, we might want to raise or swallow.
             # Swallowing allows other recognizers to still work.
+
+        logger.info(f"DLP raw findings count: {len(response.result.findings)}")
+        logger.info(f"DLP mapped results count: {len(results)}")
 
         return results
 
