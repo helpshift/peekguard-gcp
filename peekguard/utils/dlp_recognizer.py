@@ -130,14 +130,13 @@ class GoogleDlpRecognizer(EntityRecognizer):
                         ),
                     )
                     results.append(result)
+                    logger.info(f"DLP raw findings count: {len(response.result.findings)}")
+                    logger.info(f"DLP mapped results count: {len(results)}")
 
         except Exception as e:
             logger.error(f"Error calling GCP DLP: {e}", exc_info=True)
             # Depending on policy, we might want to raise or swallow.
             # Swallowing allows other recognizers to still work.
-
-        logger.info(f"DLP raw findings count: {len(response.result.findings)}")
-        logger.info(f"DLP mapped results count: {len(results)}")
 
         return results
 
