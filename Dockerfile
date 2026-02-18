@@ -28,9 +28,11 @@ FROM python:3.12.9-slim
 
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1 \
-    HSFT_CONF_ENV=sandbox
+    HSFT_CONF_ENV=nv_prod \
+    PORT=8045 \
+    PYTHON=python3
 
-# Install minimal runtime libs
+# Install minimal runtime libs and make
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
@@ -43,5 +45,5 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy App Code
 COPY . .
 
-EXPOSE 8080
+EXPOSE 8045
 CMD ["python", "-m", "peekguard.main"]
