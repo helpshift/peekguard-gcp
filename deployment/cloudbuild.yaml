@@ -4,10 +4,10 @@ options:
 
 steps:
   # Debug print branch
-  - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'bash'
+  - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
     args:
-      - '-c'
+      - "-c"
       - |
         gcloud secrets versions access latest --secret="pip-conf-private-pii" > pip.conf
         echo "Running for branch: ${BRANCH_NAME}"
@@ -21,7 +21,7 @@ steps:
         "$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA",
         "-f",
         "Dockerfile",
-        "."
+        ".",
       ]
 
   # Step 2 — Push
@@ -29,7 +29,7 @@ steps:
     args:
       [
         "push",
-        "$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA"
+        "$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA",
       ]
 
   # Step 3 — Deploy to Cloud Run
@@ -53,7 +53,8 @@ steps:
         "--vpc-connector=$_VPC_CONNECTOR",
         "--vpc-egress=all-traffic",
         "--labels=commit-sha=$SHORT_SHA",
-        "--no-cpu-throttling"
+        "--no-cpu-throttling",
+        "--port=8045",
       ]
 
   # Step 4 — Keep only latest 7 revisions
