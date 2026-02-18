@@ -32,7 +32,7 @@ ENV PYTHONUNBUFFERED=1 \
     PORT=8045 \
     PYTHON=python3
 
-# Install minimal runtime libs and make
+# Install minimal runtime libs
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
