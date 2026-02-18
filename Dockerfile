@@ -28,7 +28,7 @@ FROM python:3.12.9-slim
 
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1 \
-    HSFT_CONF_ENV=nv_prod \
+    HSFT_CONF_ENV=sandbox \
     PORT=8045 \
     PYTHON=python3
 
