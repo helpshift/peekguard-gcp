@@ -55,7 +55,7 @@ class GoogleDlpRecognizer(EntityRecognizer):
         else:
             credentials, project_id = google_auth_default()
             self.project_id = project_id
-            self.dlp_client = dlp_v2.DlpServiceClient()
+            self.dlp_client = dlp_v2.DlpServiceClient(credentials = credentials)
         self.parent = f"projects/{self.project_id}"
 
     def analyze(
