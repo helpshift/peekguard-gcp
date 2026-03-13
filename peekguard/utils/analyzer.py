@@ -68,6 +68,13 @@ def _initialize_recognizer_registry() -> RecognizerRegistry:
     """Initializes RecognizerRegistry and loads predefined recognizers."""
     registry = RecognizerRegistry()
     registry.load_predefined_recognizers()
+
+    # Remove SpacyRecognizer to avoid false positives in NER (PERSON, LOCATION, ORG).
+    # We rely on local Regex recognizers for patterns (IP, Card, etc.) and
+    # Google Cloud DLP for complex entities like Names and Locations.
+    registry.remove_recognizer("SpacyRecognizer")
+    logger.info("Removed SpacyRecognizer to prevent NER false positives.")
+
     logger.info("Loaded predefined recognizers.")
     return registry
 
@@ -96,7 +103,7 @@ def _initialize_nlp_engine_and_registry() -> tuple[
 
         nlp_configuration = {
             "nlp_engine_name": "spacy",
-            "models": [{"lang_code": "en", "model_name": "en_core_web_sm"}],
+            "models": [{"lang_code": "en", "model_name": "en_core_web_md"}],
         }
         nlp_engine = NlpEngineProvider(
             nlp_configuration=nlp_configuration
@@ -107,7 +114,7 @@ def _initialize_nlp_engine_and_registry() -> tuple[
     except ImportError:
         logger.error(
             "Model not found. "
-            "Please run: pip install spacy && python -m spacy download en_core_web_sm"
+            "Please run: pip install spacy && python -m spacy download en_core_web_md"
         )
     except Exception as e:
         logger.error(f"Failed to create NLP engine or registry: {e}", exc_info=True)

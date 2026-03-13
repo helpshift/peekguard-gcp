@@ -19,7 +19,7 @@ dependencies = [
     "hvac==0.10.14",
     "google-cloud-dlp==3.34.0",
     "posix_ipc==1.3.0",
-    "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
+    "en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl",
 ]
 
 [tool.hatch.build.targets.wheel]
